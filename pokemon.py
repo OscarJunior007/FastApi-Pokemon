@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional
 
@@ -13,8 +13,6 @@ class Pokemon(BaseModel):
     altura: str
     habilidad: str
     # url:str
-   
-
 
 
 tipos_pokemon = [
@@ -42,22 +40,25 @@ pokemones = []
 
 @app.get('/', tags=['inicio'])
 def listar_pokemones():
-    return pokemones
-
+    if pokemones:
+        return pokemones
+    raise HTTPException(status_code=404, detail="Lista vacia")
 
 @app.post('/pokemones', tags=['POKEMONES'])
 def agg_pokemones(pokemon: Pokemon):
     
     for i in pokemon.tipos:
-        if i in tipos_pokemon:
-            pokemones.append(pokemon)
-            return pokemones
+        if i not in tipos_pokemon:
+            raise HTTPException(status_code=404, detail=f"HABILIDAD NO ENCONTRADA, ASEGURATE DE QUE SEA UNA HABILIDAD EXISTENTE {tipos_pokemon}")
+    pokemones.append(pokemon)
+    return pokemones
     
-    print("NO SE AGG POKEMON, TIPO INCORRECTO") ## No se como enviar errores a web jajajajaj
-    return []
+ 
+    
 @app.get('/pokemones/{name_pokemon}',tags=['POKEMONES'])
 def filtro_pokemon(name_pokemon:str):
     for i in pokemones:
        if i.nombre == name_pokemon:
             return i
-    return[]
+       
+    raise HTTPException(status_code=404, detail="POKEMON NO ENCONTRADO")
