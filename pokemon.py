@@ -1,9 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional
-
+from validarURL import validador
 
 app = FastAPI()
+
 
 class Pokemon(BaseModel):
     id: Optional[int] = None
@@ -12,7 +13,7 @@ class Pokemon(BaseModel):
     tipos: list[str] = [""]
     altura: str
     habilidad: str
-    # url:str
+    url:str
 
 
 tipos_pokemon = [
@@ -50,7 +51,10 @@ def agg_pokemones(pokemon: Pokemon):
     for i in pokemon.tipos:
         if i not in tipos_pokemon:
             raise HTTPException(status_code=404, detail=f"HABILIDAD NO ENCONTRADA, ASEGURATE DE QUE SEA UNA HABILIDAD EXISTENTE {tipos_pokemon}")
-    pokemones.append(pokemon)
+    if validador(pokemon.url):
+        pokemones.append(pokemon)
+    else:
+        raise HTTPException(status_code=404, detail=f"URL NO VALIDA, (https://www.ejemplo.com) - (http://www.ejemplo.com)")
     return pokemones
     
  
